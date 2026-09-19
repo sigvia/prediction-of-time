@@ -105,11 +105,11 @@
         <div class="row">
             <div class="col">
                 <label for="lap-interval">ラップ距離 (m)</label>
-                <input type="number" id="lap-interval" value="400" step="100">
+                <input type="number" id="lap-interval" value="400" step="100" min="100">
             </div>
             <div class="col">
                 <label for="total-distance">ゴール距離 (m)</label>
-                <input type="number" id="total-distance" value="5000" step="100">
+                <input type="number" id="total-distance" value="5000" step="100" min="100">
             </div>
         </div>
     </div>
@@ -183,7 +183,10 @@
             } else {
                 // ラップ記録処理
                 const currentTime = (Date.now() - startTime) / 1000;
-                let currentDist = (laps.length + 1) * lapInterval;
+                
+                // 次の目標距離を計算（すでにあるラップの距離 ＋ 設定間隔）
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
+                let currentDist = lastDist + lapInterval;
                 
                 let isFinished = false;
                 if (currentDist >= totalDistance) {
@@ -240,9 +243,9 @@
         function renderLaps() {
             const lapListEl = document.getElementById('lap-list');
             lapListEl.innerHTML = '';
-            laps.forEach(lap => {
+            laps.forEach((lap, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<strong>${lap.distance}m</strong> | ラップ: <strong>${formatTime(lap.lapTime)}</strong> | 通過: ${formatTime(lap.time)} | 予測: ${formatTime(lap.predicted)}`;
+                li.innerHTML = `<strong>#${index + 1} (${lap.distance}m)</strong> | ラップ: <strong>${formatTime(lap.lapTime)}</strong> | 通過: ${formatTime(lap.time)} | 予測: ${formatTime(lap.predicted)}`;
                 lapListEl.appendChild(li);
             });
         }
