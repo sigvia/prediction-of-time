@@ -45,27 +45,48 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+        
         .button-group {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
         }
         button {
-            flex: 1;
-            min-width: 110px;
-            padding: 10px;
-            font-size: 0.95rem;
+            padding: 12px;
+            font-size: 1rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             color: white;
             font-weight: bold;
         }
-        #btn-start { background-color: #28a745; }
+        #btn-start { 
+            background-color: #28a745; 
+            font-size: 1.2rem;
+            padding: 16px;
+            width: 100%;
+        }
+        .button-row button {
+            flex: 1;
+            font-size: 0.9rem;
+        }
         #btn-undo { background-color: #17a2b8; }
         #btn-stop { background-color: #ffc107; color: #333; }
         #btn-reset { background-color: #dc3545; }
-        button:active { opacity: 0.8; }
+        
+        button:disabled {
+            background-color: #cccccc !important;
+            color: #666666 !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        button:active:not(:disabled) { opacity: 0.8; }
+
         .time-display {
             font-size: 1.4rem;
             font-weight: bold;
@@ -84,15 +105,29 @@
         h3, h4 {
             margin: 0 0 10px 0;
         }
-        #lap-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
         }
-        #lap-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f1f1;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.9rem;
+            text-align: center;
+        }
+        th, td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f1f3f5;
+            color: #495057;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -117,10 +152,12 @@
     <!-- コントロールボタン -->
     <div class="controls">
         <div class="button-group">
-            <button id="btn-start" onclick="handleStartLap()">スタート/ラップ</button>
-            <button id="btn-undo" onclick="handleUndoLap()">直前のラップ削除</button>
-            <button id="btn-stop" onclick="handleStop()">ストップ</button>
-            <button id="btn-reset" onclick="handleReset()">リセット</button>
+            <button id="btn-start" onclick="handleStartLap()">スタート / ラップ</button>
+            <div class="button-row">
+                <button id="btn-undo" onclick="handleUndoLap()">ラップ削除</button>
+                <button id="btn-stop" onclick="handleStop()" disabled>ストップ</button>
+                <button id="btn-reset" onclick="handleReset()">リセット</button>
+            </div>
         </div>
     </div>
 
@@ -133,24 +170,60 @@
         <div id="prediction-display" class="prediction-display"></div>
     </div>
 
-    <!-- ラップ一覧の表示 -->
+    <!-- ラップ記録一覧（表形式） -->
     <div class="laps">
         <h3>📜 ラップ記録一覧</h3>
-        <ul id="lap-list"></ul>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ラップ数</th>
+                        <th>ラップタイム</th>
+                        <th>通過タイム</th>
+                        <th>ラップ距離</th>
+                        <th>累積距離</th>
+                    </tr>
+                </thead>
+                <tbody id="lap-table-body">
+                    <!-- JavaScriptで動的に挿入されます -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         let running = false;
+        let finished = false;
         let startTime = 0;
         let elapsedTime = 0;
         let timerInterval = null;
         let laps = [];
+        let realTimeOffset = 0; // アプリ起動から経過したリアルタイム基準の補正値
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             const millis = Math.floor((seconds % 1) * 100);
             return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(2, '0')}`;
+        }
+
+        function updateButtonStates() {
+            const startBtn = document.getElementById('btn-start');
+            const stopBtn = document.getElementById('btn-stop');
+
+            if (finished) {
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+                startBtn.innerText = 'ゴールしました';
+            } else if (running) {
+                startBtn.disabled = false;
+                stopBtn.disabled = false;
+                startBtn.innerText = 'ラップ計測';
+            } else {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                startBtn.innerText = 'スタート';
+            }
         }
 
         function updateDisplay() {
@@ -172,19 +245,22 @@
         }
 
         function handleStartLap() {
-            const lapInterval = parseFloat(document.getElementById('lap-interval').value);
             const totalDistance = parseFloat(document.getElementById('total-distance').value);
 
-            if (!running) {
+            if (!running && !finished) {
                 // スタート処理
                 running = true;
                 startTime = Date.now() - (elapsedTime * 1000);
-                timerInterval = setInterval(updateDisplay, 50);
-            } else {
+                realTimeOffset = Date.now(); // スタート時のリアルタイムを記録
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
+                }
+                updateButtonStates();
+            } else if (running) {
                 // ラップ記録処理
+                const lapInterval = parseFloat(document.getElementById('lap-interval').value);
                 const currentTime = (Date.now() - startTime) / 1000;
                 
-                // 次の目標距離を計算（すでにあるラップの距離 ＋ 設定間隔）
                 const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
                 let currentDist = lastDist + lapInterval;
                 
@@ -196,10 +272,13 @@
 
                 const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
                 const lapTime = currentTime - previousTotalTime;
-
+                
+                const actualInterval = currentDist - lastDist;
                 const predicted = (currentTime / currentDist) * totalDistance;
 
                 laps.push({
+                    lapNumber: laps.length + 1,
+                    lapDistance: actualInterval,
                     distance: currentDist,
                     lapTime: lapTime,
                     time: currentTime,
@@ -209,8 +288,8 @@
                 renderLaps();
                 updateDisplay();
 
-                // ゴール距離に達したら自動でストップ
                 if (isFinished) {
+                    finished = true;
                     handleStop();
                 }
             }
@@ -219,34 +298,72 @@
         function handleUndoLap() {
             if (laps.length > 0) {
                 laps.pop();
+                
+                const totalDistance = parseFloat(document.getElementById('total-distance').value);
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
+                
+                // ゴール状態から削除された場合は、ゴール状態を解除する
+                if (finished && lastDist < totalDistance) {
+                    finished = false;
+                }
+
+                // 【重要】ラップ削除ボタンを押した瞬間の「本当の経過時間（裏で進み続けていた時間）」をベースにする
+                // これにより、間違えて押してから削除するまでの数秒間（止まっていた時間）も反映されたタイムから再開します
+                if (realTimeOffset > 0) {
+                    elapsedTime = (Date.now() - realTimeOffset) / 1000;
+                }
+
+                running = true;
+                startTime = Date.now() - (elapsedTime * 1000);
+                
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
+                }
+
                 renderLaps();
                 updateDisplay();
+                updateButtonStates();
             }
         }
 
         function handleStop() {
+            if (!running) return;
             running = false;
             clearInterval(timerInterval);
+            timerInterval = null;
             updateDisplay();
+            updateButtonStates();
         }
 
         function handleReset() {
             running = false;
+            finished = false;
             clearInterval(timerInterval);
+            timerInterval = null;
             startTime = 0;
             elapsedTime = 0;
+            realTimeOffset = 0;
             laps = [];
+            document.getElementById('btn-start').innerText = 'スタート / ラップ';
             updateDisplay();
             renderLaps();
+            updateButtonStates();
         }
 
         function renderLaps() {
-            const lapListEl = document.getElementById('lap-list');
-            lapListEl.innerHTML = '';
-            laps.forEach((lap, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>#${index + 1} (${lap.distance}m)</strong> | ラップ: <strong>${formatTime(lap.lapTime)}</strong> | 通過: ${formatTime(lap.time)} | 予測: ${formatTime(lap.predicted)}`;
-                lapListEl.appendChild(li);
+            const tbody = document.getElementById('lap-table-body');
+            tbody.innerHTML = '';
+            const reversedLaps = [...laps].reverse();
+            reversedLaps.forEach((lap) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${lap.lapNumber}</td>
+                    <td><strong>${formatTime(lap.lapTime)}</strong></td>
+                    <td>${formatTime(lap.time)}</td>
+                    <td>${lap.lapDistance}m</td>
+                    <td>${lap.distance}m</td>
+                `;
+                tbody.appendChild(tr);
             });
         }
     </script>
