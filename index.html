@@ -7,18 +7,18 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 15px;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
             background-color: #f8f9fa;
             color: #333;
         }
         h1 {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .settings, .batch-controls, .runner-card {
+        .card {
             background: #ffffff;
             padding: 15px;
             border-radius: 8px;
@@ -28,15 +28,15 @@
         .row {
             display: flex;
             gap: 15px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         .col {
             flex: 1;
         }
         label {
             display: block;
-            font-size: 0.8rem;
-            margin-bottom: 3px;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
             color: #666;
         }
         input {
@@ -46,166 +46,91 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
-        /* 人数選択ボタンエリア */
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: center;
+        
+        /* メインの操作ボタン（スタート／ラップ） */
+        .main-action-area {
+            margin-bottom: 12px;
         }
-        .mode-selector label {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0;
-            white-space: nowrap;
-        }
-        .mode-buttons {
-            display: flex;
-            gap: 8px;
-            flex: 1;
-        }
-        .mode-btn {
-            flex: 1;
-            padding: 8px;
-            font-size: 0.9rem;
-            border: 1px solid #ccc;
-            background: #e9ecef;
-            color: #495057;
-            border-radius: 4px;
+        #btn-start { 
+            background-color: #28a745; 
+            font-size: 1.6rem;
+            padding: 22px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-        }
-        .mode-btn.active {
-            background-color: #343a40;
             color: white;
-            border-color: #343a40;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
         }
 
-        /* 一斉操作ボタン */
-        .batch-controls {
+        /* 補助ボタンエリア（2つ並び） */
+        .sub-action-row {
             display: flex;
             gap: 10px;
         }
-        .batch-controls button {
+        .sub-action-row button {
             flex: 1;
             padding: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-        }
-        #btn-batch-start { background-color: #28a745; }
-        #btn-batch-reset { background-color: #dc3545; }
-
-        /* 目に優しい落ち着いたトーンのデザイン */
-        .runner-card {
-            border-left: 6px solid #6c757d;
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-        .btn-start { 
-            background-color: #28a745;
-            font-size: 1.1rem;
-            padding: 14px;
-            width: 100%;
-        }
-        .prediction-display {
-            font-size: 1.05rem;
-            color: #0066cc;
-            margin-bottom: 10px;
-        }
-
-        .runner-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        input.runner-name {
-            font-weight: bold;
-            font-size: 1rem;
-            border: 1px dashed #ccc;
-            background: #fafafa;
-            padding: 4px 8px;
-            width: 140px;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .button-row {
-            display: flex;
-            gap: 8px;
-        }
-        button {
-            padding: 10px;
             font-size: 0.95rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             color: white;
             font-weight: bold;
         }
-        .button-row button {
-            flex: 1;
-            font-size: 0.85rem;
-        }
-        .btn-undo { background-color: #17a2b8; }
-        .btn-stop { background-color: #ffc107; color: #333; }
-        .btn-reset { background-color: #dc3545; }
+        #btn-undo { background-color: #17a2b8; }
+        #btn-stop-reset { background-color: #6c757d; }
         
         button:disabled {
             background-color: #cccccc !important;
             color: #666666 !important;
+            border-color: #cccccc !important;
             cursor: not-allowed;
             opacity: 0.6;
+            box-shadow: none !important;
         }
 
-        button:active:not(:disabled) { opacity: 0.8; }
+        button:active:not(:disabled) { transform: scale(0.98); }
 
         .time-display {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            margin: 8px 0;
+            margin: 5px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
+        }
+        .prediction-display {
+            font-size: 1.2rem;
+            color: #007bff;
+            margin: 5px 0;
+        }
+        h3 {
+            margin: 0 0 10px 0;
         }
 
-        /* ミニラップテーブル */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
-            max-height: 150px;
-            overflow-y: auto;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             text-align: center;
         }
         th, td {
-            padding: 6px 4px;
+            padding: 8px 6px;
             border-bottom: 1px solid #eee;
         }
         th {
             background-color: #f1f3f5;
             color: #495057;
             font-weight: bold;
-            position: sticky;
-            top: 0;
+            font-size: 0.85rem;
         }
         tr:hover {
             background-color: #f8f9fa;
@@ -216,47 +141,70 @@
 
     <h1>🏃‍♂️ タイム予測ランニングアプリ</h1>
 
-    <!-- 共通設定エリア -->
-    <div class="settings">
-        <!-- 人数切り替えボタン -->
-        <div class="mode-selector">
-            <label>計測人数:</label>
-            <div class="mode-buttons">
-                <button class="mode-btn active" id="mode-1" onclick="changeRunnerCount(1)">1人</button>
-                <button class="mode-btn" id="mode-2" onclick="changeRunnerCount(2)">2人</button>
-                <button class="mode-btn" id="mode-3" onclick="changeRunnerCount(3)">3人</button>
-            </div>
-        </div>
-
+    <!-- 設定エリア -->
+    <div class="card">
         <div class="row">
             <div class="col">
-                <label for="common-lap-interval">ラップ共通距離 (m)</label>
-                <input type="number" id="common-lap-interval" value="400" step="100" min="100">
+                <label for="lap-interval">ラップ距離 (m)</label>
+                <input type="number" id="lap-interval" value="400" step="100" min="100">
             </div>
             <div class="col">
-                <label for="common-total-distance">ゴール共通距離 (m)</label>
-                <input type="number" id="common-total-distance" value="5000" step="100" min="100">
+                <label for="total-distance">ゴール距離 (m)</label>
+                <input type="number" id="total-distance" value="5000" step="100" min="100">
             </div>
         </div>
     </div>
 
-    <!-- 一斉操作ボタン -->
-    <div class="batch-controls">
-        <button id="btn-batch-start" onclick="handleBatchStart()">🚀 表示中全員一斉スタート</button>
-        <button id="btn-batch-reset" onclick="handleBatchReset()">🔄 表示中全員一斉リセット</button>
+    <!-- コントロールボタン -->
+    <div class="card">
+        <div class="main-action-area">
+            <button id="btn-start" onclick="handleStartLap()">スタート</button>
+        </div>
+
+        <div class="sub-action-row">
+            <button id="btn-undo" onclick="handleUndoLap()">ラップ削除</button>
+            <button id="btn-stop-reset" onclick="handleStopOrReset()">ストップ</button>
+        </div>
     </div>
 
-    <!-- ランナーカード表示コンテナ -->
-    <div id="runners-container"></div>
+    <!-- 経過時間・予測表示 -->
+    <div class="card">
+        <div id="time-display" class="time-display">
+            <span id="total-time-text">⏱️ タイム: 00:00.00</span>
+            <span id="current-lap-display" style="color: #666; font-size: 1.1rem;">ラップ: 00:00.00</span>
+        </div>
+        <div id="prediction-display" class="prediction-display"></div>
+    </div>
+
+    <!-- ラップ記録一覧 -->
+    <div class="card">
+        <h3>📜 ラップ記録一覧</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ラップ数</th>
+                        <th>ラップタイム</th>
+                        <th>通過タイム</th>
+                        <th>ラップ距離</th>
+                        <th>累積距離</th>
+                    </tr>
+                </thead>
+                <tbody id="lap-table-body">
+                    <tr><td colspan="5" style="color: #999;">記録なし</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-        let activeCount = 1; // 初期設定は1人に変更
-
-        let runners = [
-            { id: 1, name: "ランナー A", running: false, finished: false, startTime: 0, elapsedTime: 0, timerInterval: null, laps: [], realTimeOffset: 0 },
-            { id: 2, name: "ランナー B", running: false, finished: false, startTime: 0, elapsedTime: 0, timerInterval: null, laps: [], realTimeOffset: 0 },
-            { id: 3, name: "ランナー C", running: false, finished: false, startTime: 0, elapsedTime: 0, timerInterval: null, laps: [], realTimeOffset: 0 }
-        ];
+        let running = false;
+        let finished = false;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let laps = [];
+        let realTimeOffset = 0;
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -265,183 +213,70 @@
             return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(2, '0')}`;
         }
 
-        function changeRunnerCount(count) {
-            activeCount = count;
-            
-            for (let i = 1; i <= 3; i++) {
-                const btn = document.getElementById(`mode-${i}`);
-                if (i === count) {
-                    btn.classList.add('active');
+        function updateButtonStates() {
+            const startBtn = document.getElementById('btn-start');
+            const stopResetBtn = document.getElementById('btn-stop-reset');
+
+            if (finished) {
+                startBtn.disabled = true;
+                startBtn.innerText = 'ゴールしました';
+                stopResetBtn.innerText = 'リセット';
+                stopResetBtn.style.backgroundColor = '#dc3545';
+            } else if (running) {
+                startBtn.disabled = false;
+                startBtn.innerText = 'ラップ計測';
+                stopResetBtn.innerText = 'ストップ';
+                stopResetBtn.style.backgroundColor = '#ffc107';
+                stopResetBtn.style.color = '#333';
+            } else {
+                startBtn.disabled = false;
+                startBtn.innerText = 'スタート';
+                if (elapsedTime > 0 || laps.length > 0) {
+                    stopResetBtn.innerText = 'リセット';
+                    stopResetBtn.style.backgroundColor = '#dc3545';
+                    stopResetBtn.style.color = '#fff';
                 } else {
-                    btn.classList.remove('active');
-                    const r = runners[i - 1];
-                    r.running = false;
-                    clearInterval(r.timerInterval);
-                    r.timerInterval = null;
+                    stopResetBtn.innerText = 'ストップ';
+                    stopResetBtn.style.backgroundColor = '#6c757d';
+                    stopResetBtn.style.color = '#fff';
                 }
             }
-            renderApp();
         }
 
-        function renderApp() {
-            const container = document.getElementById('runners-container');
-            container.innerHTML = '';
+        function updateDisplay() {
+            if (running) {
+                elapsedTime = (Date.now() - startTime) / 1000;
+            }
+            document.getElementById('total-time-text').innerText = `⏱️ タイム: ${formatTime(elapsedTime)}`;
 
-            for (let index = 0; index < activeCount; index++) {
-                const runner = runners[index];
-                const previousTotalTime = runner.laps.length > 0 ? runner.laps[runner.laps.length - 1].time : 0;
-                const currentLapTime = runner.elapsedTime - previousTotalTime;
+            const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
+            const currentLapTime = elapsedTime - previousTotalTime;
+            document.getElementById('current-lap-display').innerText = `ラップ: ${formatTime(currentLapTime)}`;
+
+            if (laps.length > 0) {
+                const lastLap = laps[laps.length - 1];
+                document.getElementById('prediction-display').innerText = `🎯 ゴール予測: ${formatTime(lastLap.predicted)}`;
+            } else {
+                document.getElementById('prediction-display').innerText = '';
+            }
+        }
+
+        function handleStartLap() {
+            const totalDistance = parseFloat(document.getElementById('total-distance').value);
+
+            if (!running && !finished) {
+                running = true;
+                startTime = Date.now() - (elapsedTime * 1000);
+                realTimeOffset = Date.now();
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
+                }
+                updateButtonStates();
+            } else if (running) {
+                const lapInterval = parseFloat(document.getElementById('lap-interval').value);
+                const currentTime = (Date.now() - startTime) / 1000;
                 
-                let predictionText = '';
-                if (runner.laps.length > 0) {
-                    const lastLap = runner.laps[runner.laps.length - 1];
-                    predictionText = `🎯 ゴール予測: ${formatTime(lastLap.predicted)}`;
-                }
-
-                let startBtnText = 'スタート';
-                let startBtnDisabled = false;
-                let stopBtnDisabled = true;
-
-                if (runner.finished) {
-                    startBtnText = 'ゴールしました';
-                    startBtnDisabled = true;
-                } else if (runner.running) {
-                    startBtnText = 'ラップ計測';
-                    stopBtnDisabled = false;
-                } else {
-                    startBtnText = 'スタート';
-                    stopBtnDisabled = true;
-                }
-
-                const card = document.createElement('div');
-                card.className = 'runner-card';
-                card.innerHTML = `
-                    <div class="runner-header">
-                        <input type="text" class="runner-name" value="${runner.name}" oninput="updateName(${index}, this.value)">
-                        <span style="font-size: 0.85rem; color: #666;">ラップ: ${formatTime(currentLapTime)}</span>
-                    </div>
-
-                    <div class="button-group">
-                        <button class="btn-start" onclick="handleStartLap(${index})" ${startBtnDisabled ? 'disabled' : ''}>${startBtnText}</button>
-                        <div class="button-row">
-                            <button class="btn-undo" onclick="handleUndoLap(${index})">ラップ削除</button>
-                            <button class="btn-stop" onclick="handleStop(${index})" ${stopBtnDisabled ? 'disabled' : ''}>ストップ</button>
-                            <button class="btn-reset" onclick="handleReset(${index})">リセット</button>
-                        </div>
-                    </div>
-
-                    <div class="time-display">
-                        <span id="time-text-${index}">⏱️ タイム: ${formatTime(runner.elapsedTime)}</span>
-                    </div>
-                    <div class="prediction-display" id="pred-text-${index}">${predictionText}</div>
-
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>回</th>
-                                    <th>ラップタイム</th>
-                                    <th>通過タイム</th>
-                                    <th>区間</th>
-                                    <th>累積</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lap-table-${index}">
-                                ${renderLapsHtml(runner.laps)}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                container.appendChild(card);
-            }
-        }
-
-        function renderLapsHtml(laps) {
-            if (laps.length === 0) return '<tr><td colspan="5" style="color: #999;">記録なし</td></tr>';
-            let html = '';
-            const reversed = [...laps].reverse();
-            reversed.forEach(lap => {
-                html += `
-                    <tr>
-                        <td>${lap.lapNumber}</td>
-                        <td><strong>${formatTime(lap.lapTime)}</strong></td>
-                        <td>${formatTime(lap.time)}</td>
-                        <td>${lap.lapDistance}m</td>
-                        <td>${lap.distance}m</td>
-                    </tr>
-                `;
-            });
-            return html;
-        }
-
-        function updateName(index, val) {
-            runners[index].name = val;
-        }
-
-        function updateRunnerDisplay(index) {
-            const runner = runners[index];
-            if (runner.running) {
-                runner.elapsedTime = (Date.now() - runner.startTime) / 1000;
-            }
-            
-            const timeEl = document.getElementById(`time-text-${index}`);
-            if (timeEl) timeEl.innerText = `⏱️ タイム: ${formatTime(runner.elapsedTime)}`;
-        }
-
-        function handleBatchStart() {
-            for (let index = 0; index < activeCount; index++) {
-                const runner = runners[index];
-                if (!runner.running && !runner.finished) {
-                    runner.running = true;
-                    runner.startTime = Date.now() - (runner.elapsedTime * 1000);
-                    runner.realTimeOffset = Date.now();
-                    
-                    if (!runner.timerInterval) {
-                        runner.timerInterval = setInterval(((idx) => {
-                            return () => updateRunnerDisplay(idx);
-                        })(index), 50);
-                    }
-                }
-            }
-            renderApp();
-        }
-
-        function handleBatchReset() {
-            for (let index = 0; index < activeCount; index++) {
-                const runner = runners[index];
-                runner.running = false;
-                runner.finished = false;
-                clearInterval(runner.timerInterval);
-                runner.timerInterval = null;
-                runner.startTime = 0;
-                runner.elapsedTime = 0;
-                runner.realTimeOffset = 0;
-                runner.laps = [];
-            }
-            renderApp();
-        }
-
-        function handleStartLap(index) {
-            const runner = runners[index];
-            if (runner.finished) return;
-
-            const totalDistance = parseFloat(document.getElementById('common-total-distance').value);
-            const lapInterval = parseFloat(document.getElementById('common-lap-interval').value);
-
-            if (!runner.running && !runner.finished) {
-                runner.running = true;
-                runner.startTime = Date.now() - (runner.elapsedTime * 1000);
-                runner.realTimeOffset = Date.now();
-                
-                if (!runner.timerInterval) {
-                    runner.timerInterval = setInterval(() => {
-                        updateRunnerDisplay(index);
-                    }, 50);
-                }
-                renderApp();
-            } else if (runner.running) {
-                const currentTime = (Date.now() - runner.startTime) / 1000;
-                const lastDist = runner.laps.length > 0 ? runner.laps[runner.laps.length - 1].distance : 0;
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
                 let currentDist = lastDist + lapInterval;
                 
                 let isFinished = false;
@@ -450,13 +285,14 @@
                     isFinished = true;
                 }
 
-                const previousTotalTime = runner.laps.length > 0 ? runner.laps[runner.laps.length - 1].time : 0;
+                const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
                 const lapTime = currentTime - previousTotalTime;
+                
                 const actualInterval = currentDist - lastDist;
                 const predicted = (currentTime / currentDist) * totalDistance;
 
-                runner.laps.push({
-                    lapNumber: runner.laps.length + 1,
+                laps.push({
+                    lapNumber: laps.length + 1,
                     lapDistance: actualInterval,
                     distance: currentDist,
                     lapTime: lapTime,
@@ -464,67 +300,96 @@
                     predicted: predicted
                 });
 
+                renderLaps();
+                updateDisplay();
+
                 if (isFinished) {
-                    runner.finished = true;
-                    handleStop(index);
+                    finished = true;
+                    handleStop();
                 }
-                renderApp();
             }
         }
 
-        function handleUndoLap(index) {
-            const runner = runners[index];
-            if (runner.laps.length > 0) {
-                runner.laps.pop();
+        function handleUndoLap() {
+            if (laps.length > 0) {
+                laps.pop();
                 
-                const totalDistance = parseFloat(document.getElementById('common-total-distance').value);
-                const lastDist = runner.laps.length > 0 ? runner.laps[runner.laps.length - 1].distance : 0;
+                const totalDistance = parseFloat(document.getElementById('total-distance').value);
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
                 
-                if (runner.finished && lastDist < totalDistance) {
-                    runner.finished = false;
+                if (finished && lastDist < totalDistance) {
+                    finished = false;
                 }
 
-                if (runner.realTimeOffset > 0) {
-                    runner.elapsedTime = (Date.now() - runner.realTimeOffset) / 1000;
+                if (realTimeOffset > 0) {
+                    elapsedTime = (Date.now() - realTimeOffset) / 1000;
                 }
 
-                runner.running = true;
-                runner.startTime = Date.now() - (runner.elapsedTime * 1000);
-
-                if (!runner.timerInterval) {
-                    runner.timerInterval = setInterval(() => {
-                        updateRunnerDisplay(index);
-                    }, 50);
+                running = true;
+                startTime = Date.now() - (elapsedTime * 1000);
+                
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
                 }
 
-                renderApp();
+                renderLaps();
+                updateDisplay();
+                updateButtonStates();
             }
         }
 
-        function handleStop(index) {
-            const runner = runners[index];
-            if (!runner.running) return;
-            runner.running = false;
-            clearInterval(runner.timerInterval);
-            runner.timerInterval = null;
-            renderApp();
+        function handleStopOrReset() {
+            if (running) {
+                handleStop();
+            } else {
+                if (elapsedTime > 0 || laps.length > 0) {
+                    handleReset(); // 警告を出さずに直接リセットを実行
+                }
+            }
         }
 
-        function handleReset(index) {
-            const runner = runners[index];
-            runner.running = false;
-            runner.finished = false;
-            clearInterval(runner.timerInterval);
-            runner.timerInterval = null;
-            runner.startTime = 0;
-            runner.elapsedTime = 0;
-            runner.realTimeOffset = 0;
-            runner.laps = [];
-            renderApp();
+        function handleStop() {
+            running = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            updateDisplay();
+            updateButtonStates();
         }
 
-        // 初期描画（1人）
-        renderApp();
+        function handleReset() {
+            running = false;
+            finished = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startTime = 0;
+            elapsedTime = 0;
+            realTimeOffset = 0;
+            laps = [];
+            updateDisplay();
+            renderLaps();
+            updateButtonStates();
+        }
+
+        function renderLaps() {
+            const tbody = document.getElementById('lap-table-body');
+            if (laps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color: #999;">記録なし</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            const reversedLaps = [...laps].reverse();
+            reversedLaps.forEach((lap) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${lap.lapNumber}</td>
+                    <td><strong>${formatTime(lap.lapTime)}</strong></td>
+                    <td>${formatTime(lap.time)}</td>
+                    <td>${lap.lapDistance}m</td>
+                    <td>${lap.distance}m</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     </script>
 </body>
 </html>
