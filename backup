@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>タイム予測ランニングアプリ</title>
+    <title>タイム予測</title>
+    <!-- ファビコン（ブラウザのタブ用アイコン） -->
+    <link rel="icon" href="https://008100007153fgt5-eng.github.io/rikujyo-favicon/image.png" type="image/x-icon">
+
+    <!-- Safari ホーム画面用アイコン -->
+    <link
+      rel="apple-touch-icon"
+      href="https://008100007153fgt5-eng.github.io/rikujyo-favicon/image.png"
+    >
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -178,7 +186,7 @@
 
     <!-- ラップ記録一覧 -->
     <div class="card">
-        <h3>📜 ラップ記録一覧</h3>
+        <h3>ラップ記録一覧</h3>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -191,7 +199,7 @@
                     </tr>
                 </thead>
                 <tbody id="lap-table-body">
-                    <tr><td colspan="5" style="color: #999;">記録なし</td></tr>
+                    <tr><td colspan="5" style="color: #999;">0ラップ</td></tr>
                 </tbody>
             </table>
         </div>
@@ -255,7 +263,7 @@
 
             if (laps.length > 0) {
                 const lastLap = laps[laps.length - 1];
-                document.getElementById('prediction-display').innerText = `🎯 ゴール予測: ${formatTime(lastLap.predicted)}`;
+                document.getElementById('prediction-display').innerText = `ゴール予測: ${formatTime(lastLap.predicted)}`;
             } else {
                 document.getElementById('prediction-display').innerText = '';
             }
