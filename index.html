@@ -72,7 +72,7 @@
             box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
         }
 
-        /* 補助ボタンエリア（2つ並び） */
+        /* 補助ボタンエリア */
         .sub-action-row {
             display: flex;
             gap: 10px;
@@ -80,7 +80,7 @@
         .sub-action-row button {
             flex: 1;
             padding: 12px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -116,8 +116,37 @@
             color: #007bff;
             margin: 5px 0;
         }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
         h3 {
-            margin: 0 0 10px 0;
+            margin: 0;
+        }
+        .btn-save-inline {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-saved-list {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
         }
 
         .table-responsive {
@@ -143,13 +172,108 @@
         tr:hover {
             background-color: #f8f9fa;
         }
+
+        /* 共通モーダル画面のスタイル */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .btn-close-modal {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* 保存一覧の閉じるボタン用スタイル（グレー） */
+        .btn-close-modal-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .saved-record-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+        .saved-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .btn-delete-saved {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete-all {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        details {
+            margin-top: 8px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 6px 10px;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #007bff;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🏃‍♂️ タイム予測ランニングアプリ</h1>
+    <h1>レースタイム予測</h1>
 
-    <!-- 設定エリア -->
+    <!-- 設定エリア（距離のみ） -->
     <div class="card">
         <div class="row">
             <div class="col">
@@ -186,7 +310,10 @@
 
     <!-- ラップ記録一覧 -->
     <div class="card">
-        <h3>ラップ記録一覧</h3>
+        <div class="section-header">
+            <h3>ラップ記録一覧</h3>
+            <button id="btn-save" class="btn-save-inline" onclick="openSaveModal()" disabled>保存</button>
+        </div>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -203,6 +330,38 @@
                 </tbody>
             </table>
         </div>
+        <button class="btn-saved-list" onclick="openSavedModal()">保存一覧</button>
+    </div>
+
+    <!-- 保存時 名前入力モーダル -->
+    <div id="modal-save-input" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>記録の保存</h3>
+                <button class="btn-close-modal" onclick="closeSaveModal()">キャンセル</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="modal-runner-name">名前 <span style="color: #dc3545;">*必須</span></label>
+                <input type="text" id="modal-runner-name" placeholder="例: 陸上 太郎">
+            </div>
+            <button onclick="confirmSaveRecord()" style="background-color: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">この内容で保存する</button>
+        </div>
+    </div>
+
+    <!-- 保存一覧モーダル -->
+    <div id="modal-saved" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" style="margin-bottom: 10px;">
+                <h3 style="font-size: 1.1rem;">保存記録</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="btn-delete-all-top" class="btn-delete-all" onclick="deleteAllSavedRecords()" style="display: none;">一括削除</button>
+                    <button class="btn-close-modal-secondary" onclick="closeSavedModal()">閉じる</button>
+                </div>
+            </div>
+            <div id="saved-records-container" style="margin-top: 10px;">
+                <p style="color: #999; font-size: 0.9rem;">保存された記録はありません</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -213,6 +372,15 @@
         let timerInterval = null;
         let laps = [];
         let realTimeOffset = 0;
+        let savedRecords = [];
+
+        window.onload = function() {
+            const stored = localStorage.getItem('running_app_saved_records');
+            if (stored) {
+                try { savedRecords = JSON.parse(stored); } catch(e) { savedRecords = []; }
+            }
+            updateButtonStates();
+        };
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -224,12 +392,20 @@
         function updateButtonStates() {
             const startBtn = document.getElementById('btn-start');
             const stopResetBtn = document.getElementById('btn-stop-reset');
+            const saveBtn = document.getElementById('btn-save');
+
+            if ((laps.length > 0 || finished) && !running) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
 
             if (finished) {
                 startBtn.disabled = true;
                 startBtn.innerText = 'ゴールしました';
                 stopResetBtn.innerText = 'リセット';
                 stopResetBtn.style.backgroundColor = '#dc3545';
+                stopResetBtn.style.color = '#fff';
             } else if (running) {
                 startBtn.disabled = false;
                 startBtn.innerText = 'ラップ計測';
@@ -267,6 +443,10 @@
             } else {
                 document.getElementById('prediction-display').innerText = '';
             }
+
+            if (running) {
+                renderLaps();
+            }
         }
 
         function handleStartLap() {
@@ -279,6 +459,7 @@
                 if (!timerInterval) {
                     timerInterval = setInterval(updateDisplay, 50);
                 }
+                updateDisplay();
                 updateButtonStates();
             } else if (running) {
                 const lapInterval = parseFloat(document.getElementById('lap-interval').value);
@@ -310,6 +491,7 @@
 
                 renderLaps();
                 updateDisplay();
+                updateButtonStates();
 
                 if (isFinished) {
                     finished = true;
@@ -351,7 +533,7 @@
                 handleStop();
             } else {
                 if (elapsedTime > 0 || laps.length > 0) {
-                    handleReset(); // 警告を出さずに直接リセットを実行
+                    handleReset();
                 }
             }
         }
@@ -360,7 +542,38 @@
             running = false;
             clearInterval(timerInterval);
             timerInterval = null;
+
+            if (elapsedTime > 0) {
+                const lastConfirmedDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
+                const totalDistance = parseFloat(document.getElementById('total-distance').value);
+                const lapIntervalSetting = parseFloat(document.getElementById('lap-interval').value);
+
+                const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
+                const currentLapTime = elapsedTime - previousTotalTime;
+
+                if (lastConfirmedDist < totalDistance) {
+                    let estimatedLapDist = lapIntervalSetting;
+                    let currentDist = lastConfirmedDist + estimatedLapDist;
+                    if (currentDist > totalDistance) {
+                        currentDist = totalDistance;
+                        estimatedLapDist = currentDist - lastConfirmedDist;
+                    }
+
+                    const predicted = (elapsedTime / currentDist) * totalDistance;
+
+                    laps.push({
+                        lapNumber: laps.length + 1,
+                        lapDistance: estimatedLapDist,
+                        distance: currentDist,
+                        lapTime: currentLapTime,
+                        time: elapsedTime,
+                        predicted: predicted
+                    });
+                }
+            }
+
             updateDisplay();
+            renderLaps();
             updateButtonStates();
         }
 
@@ -378,12 +591,65 @@
             updateButtonStates();
         }
 
-        function renderLaps() {
-            const tbody = document.getElementById('lap-table-body');
-            if (laps.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="color: #999;">記録なし</td></tr>';
+        function openSaveModal() {
+            document.getElementById('modal-runner-name').value = '';
+            document.getElementById('modal-save-input').style.display = 'flex';
+        }
+
+        function closeSaveModal() {
+            document.getElementById('modal-save-input').style.display = 'none';
+        }
+
+        function confirmSaveRecord() {
+            const nameInput = document.getElementById('modal-runner-name');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                alert('名前を入力してください。');
+                nameInput.focus();
                 return;
             }
+
+            const totalDist = document.getElementById('total-distance').value;
+
+            const newRecord = {
+                id: Date.now(),
+                name: name,
+                totalDistance: totalDist,
+                totalTime: elapsedTime,
+                laps: [...laps],
+                date: new Date().toLocaleDateString()
+            };
+
+            savedRecords.unshift(newRecord);
+            localStorage.setItem('running_app_saved_records', JSON.stringify(savedRecords));
+            
+            closeSaveModal();
+            handleReset();
+        }
+
+        function deleteSavedRecord(id) {
+            savedRecords = savedRecords.filter(rec => rec.id !== id);
+            localStorage.setItem('running_app_saved_records', JSON.stringify(savedRecords));
+            renderSavedModalList();
+        }
+
+        function deleteAllSavedRecords() {
+            if (savedRecords.length === 0) return;
+            if (confirm('保存されているすべての記録を削除しますか？')) {
+                savedRecords = [];
+                localStorage.removeItem('running_app_saved_records');
+                renderSavedModalList();
+            }
+        }
+
+        function renderLaps() {
+            const tbody = document.getElementById('lap-table-body');
+            if (laps.length === 0 && !running) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color: #999;">0ラップ</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = '';
             const reversedLaps = [...laps].reverse();
             reversedLaps.forEach((lap) => {
@@ -397,6 +663,116 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            if (running) {
+                const totalDistance = parseFloat(document.getElementById('total-distance').value);
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
+                
+                if (lastDist < totalDistance) {
+                    const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
+                    const currentLapTime = elapsedTime - previousTotalTime;
+                    const nextLapNum = laps.length + 1;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${nextLapNum}</td>
+                        <td><strong>${formatTime(currentLapTime)}</strong></td>
+                        <td>${formatTime(elapsedTime)}</td>
+                        <td>-m</td>
+                        <td>-m</td>
+                    `;
+                    tbody.insertBefore(tr, tbody.firstChild);
+                }
+            }
+        }
+
+        function openSavedModal() {
+            renderSavedModalList();
+            document.getElementById('modal-saved').style.display = 'flex';
+        }
+
+        function closeSavedModal() {
+            document.getElementById('modal-saved').style.display = 'none';
+        }
+
+        function renderSavedModalList() {
+            const container = document.getElementById('saved-records-container');
+            const deleteAllBtn = document.getElementById('btn-delete-all-top');
+
+            if (savedRecords.length === 0) {
+                deleteAllBtn.style.display = 'none';
+                container.innerHTML = '<p style="color: #999; font-size: 0.9rem;">保存された記録はありません</p>';
+                return;
+            }
+
+            deleteAllBtn.style.display = 'inline-block';
+            container.innerHTML = '';
+            savedRecords.forEach(rec => {
+                const card = document.createElement('div');
+                card.className = 'saved-record-card';
+
+                let lapRows = '';
+                if (rec.laps && rec.laps.length > 0) {
+                    [...rec.laps].reverse().forEach(l => {
+                        lapRows += `
+                            <tr>
+                                <td>${l.lapNumber}</td>
+                                <td><strong>${formatTime(l.lapTime)}</strong></td>
+                                <td>${formatTime(l.time)}</td>
+                                <td>${l.lapDistance}m</td>
+                                <td>${l.distance}m</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    lapRows = '<tr><td colspan="5" style="color: #999;">0ラップ</td></tr>';
+                }
+
+                let avgPaceStr = '--:--';
+                const distKm = parseFloat(rec.totalDistance) / 1000;
+                if (distKm > 0 && rec.totalTime > 0) {
+                    const secPerKm = rec.totalTime / distKm;
+                    const pMins = Math.floor(secPerKm / 60);
+                    const pSecs = Math.floor(secPerKm % 60);
+                    avgPaceStr = `${pMins}:${String(pSecs).padStart(2, '0')}/km`;
+                }
+
+                card.innerHTML = `
+                    <div class="saved-card-header">
+                        <div>
+                            <strong>${escapeHtml(rec.name)} / ${escapeHtml(rec.totalDistance)}m</strong><br>
+                            <span style="font-size: 0.8rem; color: #666;">${rec.date} ｜ 総タイム: <strong>${formatTime(rec.totalTime)}</strong> ｜ 平均ペース: ${avgPaceStr}</span>
+                        </div>
+                        <button class="btn-delete-saved" onclick="deleteSavedRecord(${rec.id})">削除</button>
+                    </div>
+                    <details>
+                        <summary>ラップ一覧を表示</summary>
+                        <div class="table-responsive" style="margin-top: 8px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ラップ数</th>
+                                        <th>ラップタイム</th>
+                                        <th>通過タイム</th>
+                                        <th>ラップ距離</th>
+                                        <th>累積距離</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${lapRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
     </script>
 </body>
