@@ -16,8 +16,9 @@
         h1 {
             font-size: 1.5rem;
             text-align: center;
+            margin-bottom: 20px;
         }
-        .settings, .controls, .display, .laps {
+        .card {
             background: #ffffff;
             padding: 15px;
             border-radius: 8px;
@@ -45,27 +46,53 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        .button-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        
+        /* メインの操作ボタン（スタート／ラップ） */
+        .main-action-area {
+            margin-bottom: 12px;
         }
-        button {
+        #btn-start { 
+            background-color: #28a745; 
+            font-size: 1.6rem;
+            padding: 22px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+        }
+
+        /* 補助ボタンエリア（2つ並び） */
+        .sub-action-row {
+            display: flex;
+            gap: 10px;
+        }
+        .sub-action-row button {
             flex: 1;
-            min-width: 110px;
-            padding: 10px;
+            padding: 12px;
             font-size: 0.95rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             color: white;
             font-weight: bold;
         }
-        #btn-start { background-color: #28a745; }
         #btn-undo { background-color: #17a2b8; }
-        #btn-stop { background-color: #ffc107; color: #333; }
-        #btn-reset { background-color: #dc3545; }
-        button:active { opacity: 0.8; }
+        #btn-stop-reset { background-color: #6c757d; }
+        
+        button:disabled {
+            background-color: #cccccc !important;
+            color: #666666 !important;
+            border-color: #cccccc !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none !important;
+        }
+
+        button:active:not(:disabled) { transform: scale(0.98); }
+
         .time-display {
             font-size: 1.4rem;
             font-weight: bold;
@@ -81,18 +108,32 @@
             color: #007bff;
             margin: 5px 0;
         }
-        h3, h4 {
+        h3 {
             margin: 0 0 10px 0;
         }
-        #lap-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
         }
-        #lap-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f1f1;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.9rem;
+            text-align: center;
+        }
+        th, td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f1f3f5;
+            color: #495057;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -101,7 +142,7 @@
     <h1>🏃‍♂️ タイム予測ランニングアプリ</h1>
 
     <!-- 設定エリア -->
-    <div class="settings">
+    <div class="card">
         <div class="row">
             <div class="col">
                 <label for="lap-interval">ラップ距離 (m)</label>
@@ -115,17 +156,19 @@
     </div>
 
     <!-- コントロールボタン -->
-    <div class="controls">
-        <div class="button-group">
-            <button id="btn-start" onclick="handleStartLap()">スタート/ラップ</button>
-            <button id="btn-undo" onclick="handleUndoLap()">直前のラップ削除</button>
-            <button id="btn-stop" onclick="handleStop()">ストップ</button>
-            <button id="btn-reset" onclick="handleReset()">リセット</button>
+    <div class="card">
+        <div class="main-action-area">
+            <button id="btn-start" onclick="handleStartLap()">スタート</button>
+        </div>
+
+        <div class="sub-action-row">
+            <button id="btn-undo" onclick="handleUndoLap()">ラップ削除</button>
+            <button id="btn-stop-reset" onclick="handleStopOrReset()">ストップ</button>
         </div>
     </div>
 
     <!-- 経過時間・予測表示 -->
-    <div class="display">
+    <div class="card">
         <div id="time-display" class="time-display">
             <span id="total-time-text">⏱️ タイム: 00:00.00</span>
             <span id="current-lap-display" style="color: #666; font-size: 1.1rem;">ラップ: 00:00.00</span>
@@ -133,24 +176,71 @@
         <div id="prediction-display" class="prediction-display"></div>
     </div>
 
-    <!-- ラップ一覧の表示 -->
-    <div class="laps">
+    <!-- ラップ記録一覧 -->
+    <div class="card">
         <h3>📜 ラップ記録一覧</h3>
-        <ul id="lap-list"></ul>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ラップ数</th>
+                        <th>ラップタイム</th>
+                        <th>通過タイム</th>
+                        <th>ラップ距離</th>
+                        <th>累積距離</th>
+                    </tr>
+                </thead>
+                <tbody id="lap-table-body">
+                    <tr><td colspan="5" style="color: #999;">記録なし</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         let running = false;
+        let finished = false;
         let startTime = 0;
         let elapsedTime = 0;
         let timerInterval = null;
         let laps = [];
+        let realTimeOffset = 0;
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             const millis = Math.floor((seconds % 1) * 100);
             return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(millis).padStart(2, '0')}`;
+        }
+
+        function updateButtonStates() {
+            const startBtn = document.getElementById('btn-start');
+            const stopResetBtn = document.getElementById('btn-stop-reset');
+
+            if (finished) {
+                startBtn.disabled = true;
+                startBtn.innerText = 'ゴールしました';
+                stopResetBtn.innerText = 'リセット';
+                stopResetBtn.style.backgroundColor = '#dc3545';
+            } else if (running) {
+                startBtn.disabled = false;
+                startBtn.innerText = 'ラップ計測';
+                stopResetBtn.innerText = 'ストップ';
+                stopResetBtn.style.backgroundColor = '#ffc107';
+                stopResetBtn.style.color = '#333';
+            } else {
+                startBtn.disabled = false;
+                startBtn.innerText = 'スタート';
+                if (elapsedTime > 0 || laps.length > 0) {
+                    stopResetBtn.innerText = 'リセット';
+                    stopResetBtn.style.backgroundColor = '#dc3545';
+                    stopResetBtn.style.color = '#fff';
+                } else {
+                    stopResetBtn.innerText = 'ストップ';
+                    stopResetBtn.style.backgroundColor = '#6c757d';
+                    stopResetBtn.style.color = '#fff';
+                }
+            }
         }
 
         function updateDisplay() {
@@ -172,19 +262,20 @@
         }
 
         function handleStartLap() {
-            const lapInterval = parseFloat(document.getElementById('lap-interval').value);
             const totalDistance = parseFloat(document.getElementById('total-distance').value);
 
-            if (!running) {
-                // スタート処理
+            if (!running && !finished) {
                 running = true;
                 startTime = Date.now() - (elapsedTime * 1000);
-                timerInterval = setInterval(updateDisplay, 50);
-            } else {
-                // ラップ記録処理
+                realTimeOffset = Date.now();
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
+                }
+                updateButtonStates();
+            } else if (running) {
+                const lapInterval = parseFloat(document.getElementById('lap-interval').value);
                 const currentTime = (Date.now() - startTime) / 1000;
                 
-                // 次の目標距離を計算（すでにあるラップの距離 ＋ 設定間隔）
                 const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
                 let currentDist = lastDist + lapInterval;
                 
@@ -196,10 +287,13 @@
 
                 const previousTotalTime = laps.length > 0 ? laps[laps.length - 1].time : 0;
                 const lapTime = currentTime - previousTotalTime;
-
+                
+                const actualInterval = currentDist - lastDist;
                 const predicted = (currentTime / currentDist) * totalDistance;
 
                 laps.push({
+                    lapNumber: laps.length + 1,
+                    lapDistance: actualInterval,
                     distance: currentDist,
                     lapTime: lapTime,
                     time: currentTime,
@@ -209,8 +303,8 @@
                 renderLaps();
                 updateDisplay();
 
-                // ゴール距離に達したら自動でストップ
                 if (isFinished) {
+                    finished = true;
                     handleStop();
                 }
             }
@@ -219,34 +313,81 @@
         function handleUndoLap() {
             if (laps.length > 0) {
                 laps.pop();
+                
+                const totalDistance = parseFloat(document.getElementById('total-distance').value);
+                const lastDist = laps.length > 0 ? laps[laps.length - 1].distance : 0;
+                
+                if (finished && lastDist < totalDistance) {
+                    finished = false;
+                }
+
+                if (realTimeOffset > 0) {
+                    elapsedTime = (Date.now() - realTimeOffset) / 1000;
+                }
+
+                running = true;
+                startTime = Date.now() - (elapsedTime * 1000);
+                
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateDisplay, 50);
+                }
+
                 renderLaps();
                 updateDisplay();
+                updateButtonStates();
+            }
+        }
+
+        function handleStopOrReset() {
+            if (running) {
+                handleStop();
+            } else {
+                if (elapsedTime > 0 || laps.length > 0) {
+                    handleReset(); // 警告を出さずに直接リセットを実行
+                }
             }
         }
 
         function handleStop() {
             running = false;
             clearInterval(timerInterval);
+            timerInterval = null;
             updateDisplay();
+            updateButtonStates();
         }
 
         function handleReset() {
             running = false;
+            finished = false;
             clearInterval(timerInterval);
+            timerInterval = null;
             startTime = 0;
             elapsedTime = 0;
+            realTimeOffset = 0;
             laps = [];
             updateDisplay();
             renderLaps();
+            updateButtonStates();
         }
 
         function renderLaps() {
-            const lapListEl = document.getElementById('lap-list');
-            lapListEl.innerHTML = '';
-            laps.forEach((lap, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>#${index + 1} (${lap.distance}m)</strong> | ラップ: <strong>${formatTime(lap.lapTime)}</strong> | 通過: ${formatTime(lap.time)} | 予測: ${formatTime(lap.predicted)}`;
-                lapListEl.appendChild(li);
+            const tbody = document.getElementById('lap-table-body');
+            if (laps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color: #999;">記録なし</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            const reversedLaps = [...laps].reverse();
+            reversedLaps.forEach((lap) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${lap.lapNumber}</td>
+                    <td><strong>${formatTime(lap.lapTime)}</strong></td>
+                    <td>${formatTime(lap.time)}</td>
+                    <td>${lap.lapDistance}m</td>
+                    <td>${lap.distance}m</td>
+                `;
+                tbody.appendChild(tr);
             });
         }
     </script>
